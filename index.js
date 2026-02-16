@@ -36,6 +36,16 @@ app.get('/api/pokemons/:id', async (req, res) => {
     }
 });
 
+app.post('/api/pokemons', async (req, res) => {
+    try {
+        const newPokemon = new Pokemon(req.body); // Crée une nouvelle instance de Pokemon avec les données du body de la requête
+        await newPokemon.save(); // Sauvegarde le nouveau pokémon dans la base de données
+        res.status(201).json(newPokemon); // Retourne le pokémon créé avec un statut 201 (Created)
+    } catch (error) {
+        res.status(400).json({ message: 'Error creating Pokemon', error: error.message }); // Retourne une erreur si la création échoue (ex: validation)
+    }
+});
+
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT || 3000}`);
 });
