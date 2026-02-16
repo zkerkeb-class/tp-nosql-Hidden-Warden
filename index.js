@@ -46,6 +46,38 @@ app.post('/api/pokemons', async (req, res) => {
     }
 });
 
+app.put('/api/pokemons/:id', async (req, res) => {
+    try {
+        const pokemonId = req.params.id;
+        const updatedPokemon = await Pokemon.findOneAndUpdate(
+            { id: pokemonId },
+            req.body,
+            { new: true }
+        );
+        if (updatedPokemon) {
+            res.json(updatedPokemon);
+        } else {
+            res.status(404).json({ message: 'Pokémon not found' });
+        }
+    } catch (error) {
+        res.status(400).json({ message: 'Error updating Pokemon', error: error.message });
+    }
+});
+
+app.delete('/api/pokemons/:id', async (req, res) => {
+    try {
+        const pokemonId = req.params.id;
+        const deletedPokemon = await Pokemon.findOneAndDelete({ id: pokemonId }); // Supprime le pokémon avec l'ID correspondant
+        if (deletedPokemon) {
+            res.status(204).send(); // Retourne un statut 204 (No Content) si la suppression a réussi
+        } else {
+            res.status(404).json({ message: 'Pokémon not found' }); // Retourne une erreur 404 si le pokémon n'existe pas
+        }
+    } catch (error) {
+        res.status(400).json({ message: 'Error deleting Pokemon', error: error.message }); // Retourne une erreur en cas de problème
+    }
+});
+
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT || 3000}`);
 });
