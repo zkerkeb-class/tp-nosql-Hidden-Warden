@@ -6,7 +6,7 @@ import express from 'express';
 import cors from 'cors';
 
 import './connect.js'; // Se connecter à la base de données (MongoDB)
-import Pokemon from './schemas/pokemons.js'; // Charger le modèle Pokemon (définit le schéma de données)
+import pokemonsRouter from './routes/pokemons.js';
 
 const app = express();
 
@@ -16,66 +16,11 @@ app.use('/assets', express.static('assets')); // Permet d'accéder aux fichiers 
 
 app.use(express.json());
 
+// Routes
+app.use('/api/pokemons', pokemonsRouter);
 
 app.get('/', (req, res) => {
     res.send('Hello, World!');
-});
-
-app.get('/api/pokemons', async (req, res) => {
-    const pokemonsList = await Pokemon.find(); // Récupère tous les pokémons de la base de données
-    res.json(pokemonsList); // Envoie la liste des pokémons au client
-})
-
-app.get('/api/pokemons/:id', async (req, res) => {
-    const pokemonId = req.params.id; // Récupère l'ID du pokémon depuis les paramètres de l'URL
-    const pokemon = await Pokemon.findOne({ id: pokemonId }); // Trouve le pokémon avec l'ID correspondant dans la base de données
-    if (pokemon) {
-        res.json(pokemon); // Si le pokémon est trouvé, envoie ses données au client
-    } else {
-        res.status(404).json({ message: 'Pokémon not found' }); // Si le pokémon n'est pas trouvé, envoie une réponse 404 avec un message d'erreur
-    }
-});
-
-app.post('/api/pokemons', async (req, res) => {
-    try {
-        const newPokemon = new Pokemon(req.body); // Crée une nouvelle instance de Pokemon avec les données du body de la requête
-        await newPokemon.save(); // Sauvegarde le nouveau pokémon dans la base de données
-        res.status(201).json(newPokemon); // Retourne le pokémon créé avec un statut 201 (Created)
-    } catch (error) {
-        res.status(400).json({ message: 'Error creating Pokemon', error: error.message }); // Retourne une erreur si la création échoue (ex: validation)
-    }
-});
-
-app.put('/api/pokemons/:id', async (req, res) => {
-    try {
-        const pokemonId = req.params.id;
-        const updatedPokemon = await Pokemon.findOneAndUpdate(
-            { id: pokemonId },
-            req.body,
-            { new: true }
-        );
-        if (updatedPokemon) {
-            res.json(updatedPokemon);
-        } else {
-            res.status(404).json({ message: 'Pokémon not found' });
-        }
-    } catch (error) {
-        res.status(400).json({ message: 'Error updating Pokemon', error: error.message });
-    }
-});
-
-app.delete('/api/pokemons/:id', async (req, res) => {
-    try {
-        const pokemonId = req.params.id;
-        const deletedPokemon = await Pokemon.findOneAndDelete({ id: pokemonId }); // Supprime le pokémon avec l'ID correspondant
-        if (deletedPokemon) {
-            res.status(204).send(); // Retourne un statut 204 (No Content) si la suppression a réussi
-        } else {
-            res.status(404).json({ message: 'Pokémon not found' }); // Retourne une erreur 404 si le pokémon n'existe pas
-        }
-    } catch (error) {
-        res.status(400).json({ message: 'Error deleting Pokemon', error: error.message }); // Retourne une erreur en cas de problème
-    }
 });
 
 app.listen(process.env.PORT || 3000, () => {
