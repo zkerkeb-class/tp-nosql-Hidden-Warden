@@ -16,6 +16,24 @@ const PokemonsController = {
                 filter['name.english'] = { $regex: req.query.name, $options: 'i' };
             }
             
+            // Tri si les paramètres de tri sont présents
+            if (req.query.sort) {
+                const sortField = req.query.sort;
+                const sortOrder = req.query.order === 'desc' ? -1 : 1;
+                const pokemonsList = await Pokemon.find(filter).sort({ [sortField]: sortOrder });
+                return res.json(pokemonsList);
+            }
+
+            //Paginer les résultats
+            if (req.query.page || req.query.limit) {
+                const page = parseInt(req.query.page) || 1;
+                const limit = parseInt(req.query.limit) || 20;
+                const skip = (page - 1) * limit;
+                const pokemonsList = await Pokemon.find(filter).skip(skip).limit(limit);
+                return res.json(pokemonsList);
+            }
+
+
             const pokemonsList = await Pokemon.find(filter);
             res.json(pokemonsList);
         } catch (error) {
