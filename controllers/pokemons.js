@@ -1,10 +1,22 @@
 import Pokemon from '../schemas/pokemons.js';
 
 const PokemonsController = {
-    // Récupère tous les pokémons
+    // Récupère tous les pokémons (avec filtres optionnels par type et nom)
     getAllPokemons: async (req, res) => {
         try {
-            const pokemonsList = await Pokemon.find();
+            const filter = {};
+            
+            // Filtre par type si présent
+            if (req.query.type) {
+                filter.type = req.query.type;
+            }
+            
+            // Recherche par nom (partiel, insensible à la casse) si présent
+            if (req.query.name) {
+                filter['name.english'] = { $regex: req.query.name, $options: 'i' };
+            }
+            
+            const pokemonsList = await Pokemon.find(filter);
             res.json(pokemonsList);
         } catch (error) {
             res.status(500).json({ message: 'Error fetching Pokemons', error: error.message });
