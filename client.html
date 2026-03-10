@@ -67,13 +67,13 @@
 
         /* ── Type badges ─────────────────────────────────────── */
         .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: .72rem; font-weight: 700; margin: 2px; color: #fff; }
-        .t-Normal{background:#A8A878}.t-Feu{background:#F08030}.t-Eau{background:#6890F0}
-        .t-Electrik{background:#F8D030;color:#333}.t-Plante{background:#78C850}
-        .t-Ice{background:#98D8D8;color:#333}.t-Combat{background:#C03028}
-        .t-Poison{background:#A040A0}.t-Sol{background:#E0C068;color:#333}
-        .t-Vol{background:#A890F0}.t-Psy{background:#F85888}.t-Insecte{background:#A8B820}
-        .t-Rcohe{background:#B8A038}.t-Spectre{background:#705898}.t-Dragon{background:#7038F8}
-        .t-Ténèbres{background:#705848}.t-Acier{background:#B8B8D0;color:#333}.t-Fée{background:#EE99AC;color:#333}
+        .t-Normal{background:#A8A878}.t-Fire{background:#F08030}.t-Water{background:#6890F0}
+        .t-Electric{background:#F8D030;color:#333}.t-Grass{background:#78C850}
+        .t-Ice{background:#98D8D8;color:#333}.t-Fighting{background:#C03028}
+        .t-Poison{background:#A040A0}.t-Ground{background:#E0C068;color:#333}
+        .t-Flying{background:#A890F0}.t-Psychic{background:#F85888}.t-Bug{background:#A8B820}
+        .t-Rock{background:#B8A038}.t-Ghost{background:#705898}.t-Dragon{background:#7038F8}
+        .t-Dark{background:#705848}.t-Steel{background:#B8B8D0;color:#333}.t-Fairy{background:#EE99AC;color:#333}
 
         /* ── Buttons ─────────────────────────────────────────── */
         button { cursor: pointer; border: none; border-radius: 7px; padding: .45rem .9rem; font-size: .88rem; transition: opacity .15s; }
@@ -181,12 +181,12 @@
                 <input id="s-name" placeholder="Rechercher par nom…" oninput="debouncedSearch()" />
                 <select id="s-type" onchange="loadPokemons(1)">
                     <option value="">Tous les types</option>
-                    <option>Normal</option><option>Feu</option><option>Eau</option>
-                    <option>Electrik</option><option>Plante</option><option>Ice</option>
-                    <option>Combat</option><option>Poison</option><option>Sol</option>
-                    <option>Vol</option><option>Psy</option><option>Insecte</option>
-                    <option>Rcohe</option><option>Ghost</option><option>Dragon</option>
-                    <option>Ténèbres</option><option>Acier</option><option>Fée</option>
+                    <option>Normal</option><option>Fire</option><option>Water</option>
+                    <option>Electric</option><option>Grass</option><option>Ice</option>
+                    <option>Fighting</option><option>Poison</option><option>Ground</option>
+                    <option>Flying</option><option>Psychic</option><option>Bug</option>
+                    <option>Rock</option><option>Ghost</option><option>Dragon</option>
+                    <option>Dark</option><option>Steel</option><option>Fairy</option>
                 </select>
             </div>
             <div id="pokemon-grid" class="pokemon-grid"></div>
