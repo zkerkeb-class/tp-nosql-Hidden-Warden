@@ -63,7 +63,11 @@ const PokemonsController = {
             await newPokemon.save();
             res.status(201).json(newPokemon);
         } catch (error) {
-            res.status(400).json({ message: 'Error creating Pokemon', error: error.message });
+            if (error.name === 'ValidationError') {
+                const erreurs = Object.values(error.errors).map((e) => e.message);
+                return res.status(400).json({ erreurs });
+            }
+            res.status(400).json({ message: 'Erreur lors de la création du Pokémon', error: error.message });
         }
     },
 
@@ -74,15 +78,19 @@ const PokemonsController = {
             const updatedPokemon = await Pokemon.findOneAndUpdate(
                 { id: pokemonId },
                 req.body,
-                { new: true }
+                { new: true, runValidators: true, context: 'query' }
             );
             if (updatedPokemon) {
                 res.json(updatedPokemon);
             } else {
-                res.status(404).json({ message: 'Pokémon not found' });
+                res.status(404).json({ message: 'Pokémon non trouvé' });
             }
         } catch (error) {
-            res.status(400).json({ message: 'Error updating Pokemon', error: error.message });
+            if (error.name === 'ValidationError') {
+                const erreurs = Object.values(error.errors).map((e) => e.message);
+                return res.status(400).json({ erreurs });
+            }
+            res.status(400).json({ message: 'Erreur lors de la mise à jour du Pokémon', error: error.message });
         }
     },
 

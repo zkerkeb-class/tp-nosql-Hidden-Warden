@@ -10,6 +10,7 @@ import pokemonsRouter from './routes/pokemons.js';
 import authRouter from './routes/auth.js';
 import favoritesRouter from './routes/favorites.js';
 import statsRouter from './routes/stats.js';
+import teamsRouter from './routes/teams.js';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/pokemons', pokemonsRouter);
 app.use('/api/favorites', favoritesRouter);
 app.use('/api/stats', statsRouter);
+app.use('/api/teams', teamsRouter);
 
 app.get('/', (req, res) => {
     res.send('Hello, World!');
