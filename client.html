@@ -381,8 +381,8 @@ function pokemonCard(p, withRemove = false) {
         : `<button class="fav-star" onclick="toggleFav(${p.id},this)" title="${isFav ? 'Retirer' : 'Ajouter'} des favoris">${isFav ? '★' : '☆'}</button>`;
     return `
         <div class="pokemon-card">
-            <img src="${img}" alt="${p.name.english}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png'" />
-            <div style="font-weight:700;margin:.4rem 0">#${p.id} ${p.name.english}</div>
+            <img src="${img}" alt="${p.name.french}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png'" />
+            <div style="font-weight:700;margin:.4rem 0">#${p.id} ${p.name.french}</div>
             <div style="font-size:.78rem;color:var(--muted);margin-bottom:.35rem">${p.name.french}</div>
             <div>${types}</div>
             <div style="font-size:.77rem;color:var(--muted);margin-top:.3rem">HP ${p.base.HP} · ATK ${p.base.Attack}</div>
@@ -457,8 +457,8 @@ async function searchTeamPokemons() {
     const pokemons = await res.json();
 
     box.innerHTML = pokemons.slice(0, 8).map(p => `
-        <button class="btn-ghost btn-sm" onclick="addToTeam(${p.id},'${p.name.english.replace(/'/g,"\\'")}')">
-            #${p.id} ${p.name.english}
+        <button class="btn-ghost btn-sm" onclick="addToTeam(${p.id},'${p.name.french.replace(/'/g,"\\'")}')">
+            #${p.id} ${p.name.french}
             ${p.type.map(t=>`<span class="badge t-${t}" style="font-size:.65rem">${t}</span>`).join('')}
         </button>`).join('');
 }
@@ -550,7 +550,7 @@ async function toggleDetail(id, btn) {
             <div class="chip">
                 <img src="${API}${p.image}" style="width:28px;height:28px;object-fit:contain"
                      onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png'" />
-                <strong>#${p.id}</strong> ${p.name.english}
+                <strong>#${p.id}</strong> ${p.name.french}
                 ${p.type.map(t=>`<span class="badge t-${t}" style="font-size:.65rem">${t}</span>`).join('')}
                 <span style="color:var(--muted);font-size:.75rem">HP ${p.base.HP}</span>
             </div>`).join('')}</div>`
