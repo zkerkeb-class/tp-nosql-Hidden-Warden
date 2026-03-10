@@ -9,6 +9,7 @@ import './connect.js'; // Se connecter à la base de données (MongoDB)
 import pokemonsRouter from './routes/pokemons.js';
 import authRouter from './routes/auth.js';
 import favoritesRouter from './routes/favorites.js';
+import statsRouter from './routes/stats.js';
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use('/api/auth', authRouter);
 app.use('/api/pokemons', pokemonsRouter);
 app.use('/api/favorites', favoritesRouter);
+app.use('/api/stats', statsRouter);
 
 app.get('/', (req, res) => {
     res.send('Hello, World!');
