@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokédex</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg:      #0f0f1a;
+            --surface: #1a1a2e;
+            --card:    #23233a;
+            --accent:  #e63946;
+            --yellow:  #ffd166;
+            --text:    #e0e0e0;
+            --muted:   #777;
+            --border:  #2e2e4a;
+            --radius:  10px;
+        }
+
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* ── Header ─────────────────────────────────────────── */
+        header {
+            background: var(--surface);
+            border-bottom: 2px solid var(--accent);
+            padding: 0.9rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--yellow); letter-spacing: -0.5px; }
+
+        /* ── Auth ────────────────────────────────────────────── */
+        #auth-section {
+            max-width: 400px;
+            margin: 5rem auto;
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: 0 8px 32px #00000044;
+        }
+        .auth-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .auth-tab  { padding: 0.65rem 1.25rem; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); font-size: 0.95rem; }
+        .auth-tab.active { color: var(--yellow); border-bottom-color: var(--yellow); }
+
+        /* ── Tabs ────────────────────────────────────────────── */
+        .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; }
+        .tab  { padding: 0.9rem 1.4rem; cursor: pointer; border-bottom: 3px solid transparent; color: var(--muted); font-size: 0.9rem; transition: color .15s; }
+        .tab.active { color: var(--yellow); border-bottom-color: var(--yellow); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ── Layout ──────────────────────────────────────────── */
+        .content { padding: 1.75rem 2rem; max-width: 1280px; margin: 0 auto; }
+
+        /* ── Cards ───────────────────────────────────────────── */
+        .pokemon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 1rem; }
+        .pokemon-card { background: var(--card); border-radius: var(--radius); padding: 1rem; text-align: center; transition: transform .18s; }
+        .pokemon-card:hover { transform: translateY(-4px); }
+        .pokemon-card img { width: 80px; height: 80px; object-fit: contain; }
+
+        .stat-card  { background: var(--surface); border-radius: var(--radius); padding: 1.5rem; }
+        .team-card  { background: var(--surface); border-radius: var(--radius); padding: 1.25rem; margin-bottom: .75rem; }
+
+        /* ── Type badges ─────────────────────────────────────── */
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: .72rem; font-weight: 700; margin: 2px; color: #fff; }
+        .t-Normal{background:#A8A878}.t-Fire{background:#F08030}.t-Water{background:#6890F0}
+        .t-Electric{background:#F8D030;color:#333}.t-Grass{background:#78C850}
+        .t-Ice{background:#98D8D8;color:#333}.t-Fighting{background:#C03028}
+        .t-Poison{background:#A040A0}.t-Ground{background:#E0C068;color:#333}
+        .t-Flying{background:#A890F0}.t-Psychic{background:#F85888}.t-Bug{background:#A8B820}
+        .t-Rock{background:#B8A038}.t-Ghost{background:#705898}.t-Dragon{background:#7038F8}
+        .t-Dark{background:#705848}.t-Steel{background:#B8B8D0;color:#333}.t-Fairy{background:#EE99AC;color:#333}
+
+        /* ── Buttons ─────────────────────────────────────────── */
+        button { cursor: pointer; border: none; border-radius: 7px; padding: .45rem .9rem; font-size: .88rem; transition: opacity .15s; }
+        button:hover:not(:disabled) { opacity: .82; }
+        button:disabled { opacity: .4; cursor: default; }
+        .btn-yellow { background: var(--yellow); color: #111; font-weight: 700; }
+        .btn-ghost  { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-danger { background: #c62828; color: #fff; }
+        .btn-sm     { padding: 3px 9px; font-size: .78rem; }
+
+        /* ── Forms ───────────────────────────────────────────── */
+        input, select {
+            background: var(--card); border: 1px solid var(--border);
+            color: var(--text); padding: .48rem .75rem; border-radius: 7px; font-size: .9rem;
+        }
+        input:focus, select:focus { outline: 1px solid var(--yellow); }
+        label { display: block; margin-bottom: .25rem; font-size: .82rem; color: var(--muted); }
+        .fg   { margin-bottom: 1rem; }
+
+        /* ── Misc ────────────────────────────────────────────── */
+        .hidden   { display: none !important; }
+        .flex     { display: flex; gap: .5rem; align-items: center; }
+        .muted    { color: var(--muted); }
+        .error    { color: #ef5350; font-size: .83rem; margin-top: .4rem; }
+        .success  { color: #66bb6a; font-size: .83rem; margin-top: .4rem; }
+        .sec-title{ font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+        .fav-star { background: none !important; border: none !important; font-size: 1.15rem; padding: 2px; }
+
+        /* ── Chip ────────────────────────────────────────────── */
+        .chip { background: var(--card); border-radius: 20px; padding: .25rem .7rem; font-size: .82rem; display: inline-flex; align-items: center; gap: .4rem; }
+        .chip-x { background: none; border: none; color: #aaa; cursor: pointer; font-size: 1rem; padding: 0; line-height: 1; }
+        .chips  { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .4rem; }
+
+        /* ── Search bar ──────────────────────────────────────── */
+        .search-bar { display: flex; gap: .6rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+        .search-bar input, .search-bar select { flex: 1; min-width: 140px; }
+
+        /* ── Pagination ──────────────────────────────────────── */
+        .pagination { display: flex; gap: .5rem; margin-top: 1.5rem; justify-content: center; align-items: center; }
+
+        /* ── Stats grid ──────────────────────────────────────── */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
+        .record-box { flex: 1; background: var(--card); border-radius: 8px; padding: 1rem; text-align: center; }
+
+        /* ── Username badge ──────────────────────────────────── */
+        .user-badge { background: var(--card); padding: .35rem .8rem; border-radius: 20px; font-size: .88rem; }
+
+        /* ── Teams layout ─────────────────────────────────────── */
+        .teams-layout { display: grid; grid-template-columns: 340px 1fr; gap: 2rem; align-items: start; }
+        @media (max-width: 768px) { .teams-layout { grid-template-columns: 1fr; } }
+
+        /* Search results dropdown feel */
+        #team-search-results button { margin: 2px 0; display: block; width: 100%; text-align: left; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ══════════════════════════════════════ -->
+<header>
+    <div class="logo">&#9889; Pokédex</div>
+    <div id="header-user" class="flex hidden">
+        <span class="user-badge" id="user-label"></span>
+        <button class="btn-ghost btn-sm" onclick="logout()">Déconnexion</button>
+    </div>
+</header>
+
+<!-- ═══════════════ AUTH ════════════════════════════════════════ -->
+<div id="auth-section">
+    <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchAuthTab('login',this)">Connexion</div>
+        <div class="auth-tab"       onclick="switchAuthTab('register',this)">Inscription</div>
+    </div>
+
+    <div id="login-form">
+        <div class="fg"><label>Nom d'utilisateur</label><input id="login-u" placeholder="Ash…" /></div>
+        <div class="fg"><label>Mot de passe</label><input id="login-p" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')login()" /></div>
+        <button class="btn-yellow" style="width:100%" onclick="login()">Se connecter</button>
+        <div id="login-err" class="error"></div>
+    </div>
+
+    <div id="register-form" class="hidden">
+        <div class="fg"><label>Nom d'utilisateur</label><input id="reg-u" placeholder="Ash…" /></div>
+        <div class="fg"><label>Mot de passe</label><input id="reg-p" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')register()" /></div>
+        <button class="btn-yellow" style="width:100%" onclick="register()">Créer le compte</button>
+        <div id="reg-err" class="error"></div>
+        <div id="reg-ok"  class="success"></div>
+    </div>
+</div>
+
+<!-- ═══════════════ MAIN APP ════════════════════════════════════ -->
+<div id="main-app" class="hidden">
+
+    <div class="tabs">
+        <div class="tab active"  onclick="switchTab('pokemons',this)">Pokémon</div>
+        <div class="tab"         onclick="switchTab('favorites',this)">Favoris</div>
+        <div class="tab"         onclick="switchTab('teams',this)">Équipes</div>
+        <div class="tab"         onclick="switchTab('stats',this)">Stats</div>
+    </div>
+
+    <div class="content">
+
+        <!-- ── POKÉMON ──────────────────────────────────────── -->
+        <div id="tab-pokemons" class="tab-content active">
+            <div class="search-bar">
+                <input id="s-name" placeholder="Rechercher par nom…" oninput="debouncedSearch()" />
+                <select id="s-type" onchange="loadPokemons(1)">
+                    <option value="">Tous les types</option>
+                    <option>Normal</option><option>Fire</option><option>Water</option>
+                    <option>Electric</option><option>Grass</option><option>Ice</option>
+                    <option>Fighting</option><option>Poison</option><option>Ground</option>
+                    <option>Flying</option><option>Psychic</option><option>Bug</option>
+                    <option>Rock</option><option>Ghost</option><option>Dragon</option>
+                    <option>Dark</option><option>Steel</option><option>Fairy</option>
+                </select>
+            </div>
+            <div id="pokemon-grid" class="pokemon-grid"></div>
+            <div id="pagination"   class="pagination"></div>
+        </div>
+
+        <!-- ── FAVORIS ──────────────────────────────────────── -->
+        <div id="tab-favorites" class="tab-content">
+            <div class="sec-title">Mes favoris</div>
+            <div id="fav-grid" class="pokemon-grid"></div>
+        </div>
+
+        <!-- ── ÉQUIPES ──────────────────────────────────────── -->
+        <div id="tab-teams" class="tab-content">
+            <div class="teams-layout">
+
+                <!-- Create form -->
+                <div>
+                    <div class="sec-title">Nouvelle équipe</div>
+                    <div class="fg">
+                        <label>Nom de l'équipe</label>
+                        <input id="team-name" placeholder="Dream Team…" />
+                    </div>
+                    <div class="fg">
+                        <label>Ajouter des Pokémon (max 6)</label>
+                        <input id="team-search" placeholder="Chercher un Pokémon…" oninput="debouncedTeamSearch()" />
+                        <div id="team-search-results" style="margin-top:.4rem"></div>
+                    </div>
+                    <div class="fg">
+                        <label>Sélectionnés</label>
+                        <div id="team-chips" class="chips"><span class="muted" style="font-size:.82rem">Aucun Pokémon</span></div>
+                    </div>
+                    <button class="btn-yellow" onclick="createTeam()">Créer l'équipe</button>
+                    <div id="team-err" class="error"></div>
+                    <div id="team-ok"  class="success"></div>
+                </div>
+
+                <!-- List -->
+                <div>
+                    <div class="sec-title">Mes équipes</div>
+                    <div id="teams-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── STATS ────────────────────────────────────────── -->
+        <div id="tab-stats" class="tab-content">
+            <div class="sec-title">Statistiques globales</div>
+            <div id="stats-content"></div>
+        </div>
+
+    </div><!-- /content -->
+</div><!-- /main-app -->
+
+<script>
+const API = '';
+
+let currentPage      = 1;
+let userFavorites    = new Set();   // numeric pokemon IDs
+let selectedPokemons = [];          // [{ id, name }]
+let searchTimer      = null;
+let teamSearchTimer  = null;
+
+// ── Cookies ───────────────────────────────────────────────────────
+const Cookies = {
+    set(k, v, maxAge = 3600) {
+        document.cookie = `${k}=${encodeURIComponent(v)}; path=/; max-age=${maxAge}; SameSite=Lax`;
+    },
+    get(k) {
+        const pair = document.cookie.split('; ').find(c => c.startsWith(k + '='));
+        return pair ? decodeURIComponent(pair.split('=')[1]) : null;
+    },
+    del(k) { document.cookie = `${k}=; path=/; max-age=0`; },
+};
+
+// ── API helper ────────────────────────────────────────────────────
+async function api(method, path, body = null) {
+    const token = Cookies.get('token');
+    const res = await fetch(API + path, {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        ...(body !== null ? { body: JSON.stringify(body) } : {}),
+    });
+    return res;
+}
+
+// ── Bootstrap ─────────────────────────────────────────────────────
+function init() {
+    Cookies.get('token') ? showApp() : showAuth();
+}
+
+function showApp() {
+    document.getElementById('auth-section').classList.add('hidden');
+    document.getElementById('main-app').classList.remove('hidden');
+    document.getElementById('header-user').classList.remove('hidden');
+    document.getElementById('user-label').textContent = Cookies.get('username') ?? '';
+    loadPokemons(1);
+    loadFavorites();
+    loadTeams();
+    loadStats();
+}
+
+function showAuth() {
+    document.getElementById('auth-section').classList.remove('hidden');
+    document.getElementById('main-app').classList.add('hidden');
+    document.getElementById('header-user').classList.add('hidden');
+}
+
+// ── Auth tabs ─────────────────────────────────────────────────────
+function switchAuthTab(name, el) {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('login-form').classList.toggle('hidden', name !== 'login');
+    document.getElementById('register-form').classList.toggle('hidden', name !== 'register');
+}
+
+// ── Login ─────────────────────────────────────────────────────────
+async function login() {
+    const username = document.getElementById('login-u').value.trim();
+    const password = document.getElementById('login-p').value;
+    const errEl = document.getElementById('login-err');
+    errEl.textContent = '';
+
+    const res  = await api('POST', '/api/auth/login', { username, password });
+    const data = await res.json();
+
+    if (!res.ok) { errEl.textContent = data.error ?? 'Erreur de connexion'; return; }
+
+    Cookies.set('token',    data.token);
+    Cookies.set('username', username);
+    showApp();
+}
+
+// ── Register ──────────────────────────────────────────────────────
+async function register() {
+    const username = document.getElementById('reg-u').value.trim();
+    const password = document.getElementById('reg-p').value;
+    document.getElementById('reg-err').textContent = '';
+    document.getElementById('reg-ok').textContent  = '';
+
+    const res  = await api('POST', '/api/auth/register', { username, password });
+    const data = await res.json();
+
+    if (!res.ok) { document.getElementById('reg-err').textContent = data.error ?? 'Erreur'; return; }
+    document.getElementById('reg-ok').textContent = 'Compte créé ! Vous pouvez vous connecter.';
+}
+
+// ── Logout ────────────────────────────────────────────────────────
+function logout() {
+    Cookies.del('token'); Cookies.del('username');
+    showAuth();
+}
+
+// ── Main tabs ─────────────────────────────────────────────────────
+function switchTab(name, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(`tab-${name}`).classList.add('active');
+}
+
+// ═══════════════ POKÉMON ══════════════════════════════════════════
+
+function debouncedSearch() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => loadPokemons(1), 350);
+}
+
+async function loadPokemons(page = 1) {
+    currentPage = page;
+    const name = document.getElementById('s-name').value.trim();
+    const type = document.getElementById('s-type').value;
+    let qs = `?page=${page}&limit=20`;
+    if (name) qs += `&name=${encodeURIComponent(name)}`;
+    if (type) qs += `&type=${encodeURIComponent(type)}`;
+
+    const res      = await api('GET', `/api/pokemons${qs}`);
+    const pokemons = await res.json();
+    renderGrid(pokemons);
+    renderPagination(page, pokemons.length);
+}
+
+function pokemonCard(p, withRemove = false) {
+    const isFav = userFavorites.has(p.id);
+    const img   = `${API}${p.image}`;
+    const types = p.type.map(t => `<span class="badge t-${t}">${t}</span>`).join('');
+    const action = withRemove
+        ? `<button class="btn-danger btn-sm" style="margin-top:.5rem" onclick="removeFavorite(${p.id})">Retirer</button>`
+        : `<button class="fav-star" onclick="toggleFav(${p.id},this)" title="${isFav ? 'Retirer' : 'Ajouter'} des favoris">${isFav ? '★' : '☆'}</button>`;
+    return `
+        <div class="pokemon-card">
+            <img src="${img}" alt="${p.name.french}" onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png'" />
+            <div style="font-weight:700;margin:.4rem 0">#${p.id} ${p.name.french}</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-bottom:.35rem">${p.name.french}</div>
+            <div>${types}</div>
+            <div style="font-size:.77rem;color:var(--muted);margin-top:.3rem">HP ${p.base.HP} · ATK ${p.base.Attack}</div>
+            ${action}
+        </div>`;
+}
+
+function renderGrid(pokemons) {
+    const grid = document.getElementById('pokemon-grid');
+    grid.innerHTML = pokemons.length
+        ? pokemons.map(p => pokemonCard(p)).join('')
+        : '<p class="muted">Aucun Pokémon trouvé.</p>';
+}
+
+function renderPagination(page, count) {
+    document.getElementById('pagination').innerHTML = `
+        <button class="btn-ghost btn-sm" onclick="loadPokemons(${page-1})" ${page<=1?'disabled':''}>← Préc.</button>
+        <span class="muted" style="font-size:.88rem">Page ${page}</span>
+        <button class="btn-ghost btn-sm" onclick="loadPokemons(${page+1})" ${count<20?'disabled':''}>Suiv. →</button>`;
+}
+
+// ═══════════════ FAVORIS ══════════════════════════════════════════
+
+async function loadFavorites() {
+    const res      = await api('GET', '/api/favorites');
+    if (!res.ok) return;
+    const pokemons = await res.json();
+    userFavorites  = new Set(pokemons.map(p => p.id));
+    renderFavGrid(pokemons);
+}
+
+function renderFavGrid(pokemons) {
+    const grid = document.getElementById('fav-grid');
+    grid.innerHTML = pokemons.length
+        ? pokemons.map(p => pokemonCard(p, true)).join('')
+        : '<p class="muted">Aucun favori pour l\'instant.</p>';
+}
+
+async function toggleFav(id, btn) {
+    if (userFavorites.has(id)) {
+        await api('DELETE', `/api/favorites/${id}`);
+        userFavorites.delete(id);
+        btn.textContent = '☆'; btn.title = 'Ajouter aux favoris';
+    } else {
+        await api('POST', `/api/favorites/${id}`);
+        userFavorites.add(id);
+        btn.textContent = '★'; btn.title = 'Retirer des favoris';
+    }
+    loadFavorites();
+}
+
+async function removeFavorite(id) {
+    await api('DELETE', `/api/favorites/${id}`);
+    userFavorites.delete(id);
+    loadFavorites();
+    loadPokemons(currentPage);
+}
+
+// ═══════════════ ÉQUIPES ══════════════════════════════════════════
+
+function debouncedTeamSearch() {
+    clearTimeout(teamSearchTimer);
+    teamSearchTimer = setTimeout(searchTeamPokemons, 350);
+}
+
+async function searchTeamPokemons() {
+    const name = document.getElementById('team-search').value.trim();
+    const box  = document.getElementById('team-search-results');
+    if (!name) { box.innerHTML = ''; return; }
+
+    const res      = await api('GET', `/api/pokemons?name=${encodeURIComponent(name)}&limit=8`);
+    const pokemons = await res.json();
+
+    box.innerHTML = pokemons.slice(0, 8).map(p => `
+        <button class="btn-ghost btn-sm" onclick="addToTeam(${p.id},'${p.name.french.replace(/'/g,"\\'")}')">
+            #${p.id} ${p.name.french}
+            ${p.type.map(t=>`<span class="badge t-${t}" style="font-size:.65rem">${t}</span>`).join('')}
+        </button>`).join('');
+}
+
+function addToTeam(id, name) {
+    if (selectedPokemons.length >= 6 || selectedPokemons.find(p => p.id === id)) return;
+    selectedPokemons.push({ id, name });
+    renderTeamChips();
+}
+
+function removeFromTeam(id) {
+    selectedPokemons = selectedPokemons.filter(p => p.id !== id);
+    renderTeamChips();
+}
+
+function renderTeamChips() {
+    const el = document.getElementById('team-chips');
+    el.innerHTML = selectedPokemons.length
+        ? selectedPokemons.map(p => `
+            <div class="chip">
+                ${p.name}
+                <button class="chip-x" onclick="removeFromTeam(${p.id})">×</button>
+            </div>`).join('')
+        : '<span class="muted" style="font-size:.82rem">Aucun Pokémon</span>';
+}
+
+async function createTeam() {
+    const name  = document.getElementById('team-name').value.trim();
+    const errEl = document.getElementById('team-err');
+    const okEl  = document.getElementById('team-ok');
+    errEl.textContent = ''; okEl.textContent = '';
+
+    if (!name) { errEl.textContent = 'Le nom est obligatoire.'; return; }
+
+    const res  = await api('POST', '/api/teams', { name, pokemons: selectedPokemons.map(p => p.id) });
+    const data = await res.json();
+
+    if (!res.ok) { errEl.textContent = data.erreur ?? 'Erreur lors de la création.'; return; }
+
+    okEl.textContent = `Équipe "${name}" créée !`;
+    document.getElementById('team-name').value = '';
+    document.getElementById('team-search').value = '';
+    document.getElementById('team-search-results').innerHTML = '';
+    selectedPokemons = [];
+    renderTeamChips();
+    loadTeams();
+}
+
+async function loadTeams() {
+    const res   = await api('GET', '/api/teams');
+    if (!res.ok) return;
+    const teams = await res.json();
+    renderTeamsList(teams);
+}
+
+function renderTeamsList(teams) {
+    const el = document.getElementById('teams-list');
+    if (!teams.length) { el.innerHTML = '<p class="muted">Aucune équipe créée.</p>'; return; }
+    el.innerHTML = teams.map(t => `
+        <div class="team-card">
+            <div class="flex" style="justify-content:space-between">
+                <strong>${t.name}</strong>
+                <button class="btn-danger btn-sm" onclick="deleteTeam('${t._id}')">Supprimer</button>
+            </div>
+            <div style="font-size:.8rem;color:var(--muted);margin:.25rem 0">${t.pokemons.length} Pokémon</div>
+            <button class="btn-ghost btn-sm" onclick="toggleDetail('${t._id}',this)">Voir le détail ▾</button>
+            <div id="detail-${t._id}" class="hidden" style="margin-top:.75rem"></div>
+        </div>`).join('');
+}
+
+async function toggleDetail(id, btn) {
+    const el = document.getElementById(`detail-${id}`);
+    if (!el.classList.contains('hidden')) {
+        el.classList.add('hidden');
+        btn.textContent = 'Voir le détail ▾';
+        return;
+    }
+    btn.textContent = 'Masquer ▴';
+    el.innerHTML = '<span class="muted" style="font-size:.82rem">Chargement…</span>';
+    el.classList.remove('hidden');
+
+    const res  = await api('GET', `/api/teams/${id}`);
+    const team = await res.json();
+
+    if (!res.ok) { el.innerHTML = '<span class="error">Erreur de chargement.</span>'; return; }
+
+    el.innerHTML = team.pokemons.length
+        ? `<div class="chips">${team.pokemons.map(p => `
+            <div class="chip">
+                <img src="${API}${p.image}" style="width:28px;height:28px;object-fit:contain"
+                     onerror="this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.id}.png'" />
+                <strong>#${p.id}</strong> ${p.name.french}
+                ${p.type.map(t=>`<span class="badge t-${t}" style="font-size:.65rem">${t}</span>`).join('')}
+                <span style="color:var(--muted);font-size:.75rem">HP ${p.base.HP}</span>
+            </div>`).join('')}</div>`
+        : '<span class="muted" style="font-size:.82rem">Équipe vide.</span>';
+}
+
+async function deleteTeam(id) {
+    if (!confirm('Supprimer cette équipe définitivement ?')) return;
+    await api('DELETE', `/api/teams/${id}`);
+    loadTeams();
+}
+
+// ═══════════════ STATS ════════════════════════════════════════════
+
+async function loadStats() {
+    const res  = await api('GET', '/api/stats');
+    const data = await res.json();
+    const el   = document.getElementById('stats-content');
+
+    el.innerHTML = `
+        <div class="stats-grid">
+
+            <div class="stat-card" style="grid-column:1/-1">
+                <div style="font-weight:700;margin-bottom:1rem;color:var(--yellow)">&#127942; Records</div>
+                <div style="display:flex;gap:1rem;flex-wrap:wrap">
+                    <div class="record-box">
+                        <div style="font-size:.8rem;color:var(--muted)">+ grande attaque</div>
+                        <div style="font-size:1rem;font-weight:700;margin:.4rem 0">${data.topAttack.name}</div>
+                        <div style="font-size:1.6rem;font-weight:800;color:var(--accent)">${data.topAttack.attack}</div>
+                    </div>
+                    <div class="record-box">
+                        <div style="font-size:.8rem;color:var(--muted)">+ de HP</div>
+                        <div style="font-size:1rem;font-weight:700;margin:.4rem 0">${data.topHP.name}</div>
+                        <div style="font-size:1.6rem;font-weight:800;color:#66bb6a">${data.topHP.hp}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card" style="grid-column:1/-1">
+                <div style="font-weight:700;margin-bottom:1rem;color:var(--yellow)">&#128202; Pokémon par type</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.5rem">
+                    ${data.byType.map(t => `
+                        <div style="display:flex;align-items:center;gap:.75rem;background:var(--card);padding:.5rem .75rem;border-radius:8px">
+                            <span class="badge t-${t.type}" style="min-width:72px;text-align:center">${t.type}</span>
+                            <div>
+                                <div style="font-size:.88rem;font-weight:700">${t.count} Pokémon</div>
+                                <div style="font-size:.73rem;color:var(--muted)">HP moy. ${t.avgHP}</div>
+                            </div>
+                        </div>`).join('')}
+                </div>
+            </div>
+
+        </div>`;
+}
+
+// ── Start ─────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

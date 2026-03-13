@@ -5,7 +5,12 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 
-
+import './connect.js'; // Se connecter à la base de données (MongoDB)
+import pokemonsRouter from './routes/pokemons.js';
+import authRouter from './routes/auth.js';
+import favoritesRouter from './routes/favorites.js';
+import statsRouter from './routes/stats.js';
+import teamsRouter from './routes/teams.js';
 
 const app = express();
 
@@ -15,12 +20,16 @@ app.use('/assets', express.static('assets')); // Permet d'accéder aux fichiers 
 
 app.use(express.json());
 
+// Routes
+app.use('/api/auth', authRouter);
+app.use('/api/pokemons', pokemonsRouter);
+app.use('/api/favorites', favoritesRouter);
+app.use('/api/stats', statsRouter);
+app.use('/api/teams', teamsRouter);
 
 app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
-
-
 
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT || 3000}`);
